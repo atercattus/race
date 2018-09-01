@@ -4,17 +4,10 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type FasterCar struct {
-	file string
-}
-
-func NewFasterCar(m string) *FasterCar {
-	return &FasterCar{
-		file: m,
-	}
+	points []Point
 }
 
 const (
@@ -22,20 +15,11 @@ const (
 	delimLen = len(delim)
 )
 
-var (
-	pointsPool = sync.Pool{
-		New: func() interface{} {
-			return []Point{}
-		},
-	}
-)
+func NewFasterCar(m string) *FasterCar {
+	car := &FasterCar{}
 
-func (c *FasterCar) Go(start, finish string) []string {
-	data, _ := ioutil.ReadFile(c.file)
+	data, _ := ioutil.ReadFile(m)
 	lines := strings.Split(string(data), "\n")
-
-	points := pointsPool.Get().([]Point)[:0]
-	defer func() { pointsPool.Put(points) }()
 
 	for _, line := range lines {
 		if len(line) == 0 {
@@ -47,7 +31,7 @@ func (c *FasterCar) Go(start, finish string) []string {
 		} else if n, err := strconv.Atoi(line[pos1+delimLen : pos2]); err != nil {
 			return nil
 		} else {
-			points = append(points, Point{
+			car.points = append(car.points, Point{
 				Left:  line[:pos1],
 				Edge:  int(n),
 				Right: line[pos2+delimLen:],
@@ -55,11 +39,15 @@ func (c *FasterCar) Go(start, finish string) []string {
 		}
 	}
 
+	return car
+}
+
+func (c *FasterCar) Go(start, finish string) []string {
 	cities := []string{}
 	value := 0
-	for _, p := range points {
+	for _, p := range c.points {
 		if p.Left == start {
-			next := min(points, start)
+			next := min(c.points, start)
 			cities = append(cities, next.Left)
 			start = next.Right
 			value += next.Edge
