@@ -21,17 +21,13 @@ func (c *FasterCar) Go(start, finish string) []string {
 	re := regexp.MustCompile(`(?P<Left>[A-Z]) - (?P<Edge>[0-9]) - (?P<Right>[A-Z])`)
 
 	data, _ := ioutil.ReadFile(c.file)
+	lines := strings.Split(string(data), "\n")
 
-	l := len(strings.Split(string(data), "\n")) - 1
+	l := len(lines) - 1
 
 	all := []map[string]string{}
 	for i := 0; i < l; i++ {
-		data, err := ioutil.ReadFile(c.file)
-		if err != nil {
-			return []string{}
-		}
-
-		line := strings.Split(string(data), "\n")[i]
+		line := lines[i]
 
 		match := re.FindStringSubmatch(line)
 		params := map[string]string{}
