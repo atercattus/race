@@ -4,34 +4,15 @@ import (
 	"testing"
 )
 
-var m = `
-A - 3 - B
-A - 2 - C
-A - 4 - E
-B - 8 - C
-C - 1 - D
-E - 3 - B
-B - 5 - D
-E - 4 - L
-L - 3 - F
-D - 6 - G
-G - 7 - H
-F - 7 - D
-L - 2 - H
-G - 9 - L
-E - 5 - M
-E - 7 - N
-M - 3 - N
-L - 9 - K
-H - 4 - I
-K - 8 - H
-`
-
 func TestCar_Go(t *testing.T) {
 	car := NewCar("./routes")
 	path := car.Go("A", "D")
 
 	expected := []string{"A", "C", "D"}
+
+	if len(expected) != len(path) {
+		t.FailNow()
+	}
 
 	for i, city := range expected {
 		if city != path[i] {

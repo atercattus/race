@@ -5,10 +5,14 @@ import (
 )
 
 func TestFasterCar_Go(t *testing.T) {
-	car := NewCar("./routes")
+	car := NewFasterCar("./routes")
 	path := car.Go("A", "D")
 
 	expected := []string{"A", "C", "D"}
+
+	if len(expected) != len(path) {
+		t.FailNow()
+	}
 
 	for i, city := range expected {
 		if city != path[i] {
@@ -20,7 +24,7 @@ func TestFasterCar_Go(t *testing.T) {
 }
 
 func BenchmarkFasterCar_Go(b *testing.B) {
-	car := NewFasterCar(m)
+	car := NewFasterCar("./routes")
 	for i := 0; i < b.N; i++ {
 		car.Go("A", "D")
 	}
