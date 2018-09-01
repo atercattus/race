@@ -7,7 +7,9 @@ import (
 )
 
 type FasterCar struct {
-	points []Point
+	points     []PointInt
+	citiesIdx  map[string]int32
+	citiesName []string
 }
 
 const (
@@ -16,7 +18,9 @@ const (
 )
 
 func NewFasterCar(m string) *FasterCar {
-	car := &FasterCar{}
+	car := &FasterCar{
+		citiesIdx: map[string]int32{},
+	}
 
 	data, _ := ioutil.ReadFile(m)
 	lines := strings.Split(string(data), "\n")
@@ -31,10 +35,16 @@ func NewFasterCar(m string) *FasterCar {
 		} else if n, err := strconv.Atoi(line[pos1+delimLen : pos2]); err != nil {
 			return nil
 		} else {
-			car.points = append(car.points, Point{
-				Left:  line[:pos1],
-				Edge:  int(n),
-				Right: line[pos2+delimLen:],
+			nameLeft := line[:pos1]
+			nameRight := line[pos2+delimLen:]
+
+			idxLeft := car.addCity(nameLeft)
+			idxRight := car.addCity(nameRight)
+
+			car.points = append(car.points, PointInt{
+				Left:  idxLeft,
+				Edge:  int32(n),
+				Right: idxRight,
 			})
 		}
 	}
@@ -42,19 +52,32 @@ func NewFasterCar(m string) *FasterCar {
 	return car
 }
 
+func (c *FasterCar) addCity(name string) (idx int32) {
+	idx, ok := c.citiesIdx[name]
+	if !ok {
+		idx = int32(len(c.citiesName))
+		c.citiesIdx[name] = idx
+		c.citiesName = append(c.citiesName, name)
+	}
+	return idx
+}
+
 func (c *FasterCar) Go(start, finish string) []string {
+	startIdx := c.addCity(start)
+	finishIdx := c.addCity(finish)
+
 	cities := []string{}
-	value := 0
+	value := int32(0)
 	for _, p := range c.points {
-		if p.Left == start {
-			next := min(c.points, start)
-			cities = append(cities, next.Left)
-			start = next.Right
+		if p.Left == startIdx {
+			next := minInt(c.points, startIdx)
+			cities = append(cities, c.citiesName[next.Left])
+			startIdx = next.Right
 			value += next.Edge
 		}
 
-		if p.Right == finish {
-			cities = append(cities, p.Right)
+		if p.Right == finishIdx {
+			cities = append(cities, c.citiesName[p.Right])
 			break
 		}
 	}
