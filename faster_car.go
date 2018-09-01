@@ -1,7 +1,6 @@
 package race
 
 import (
-	"fmt"
 	"github.com/RyanCarrier/dijkstra"
 	"io/ioutil"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 )
 
 type FasterCar struct {
-	points     []PointInt
 	citiesIdx  map[string]int32
 	citiesName []string
 
@@ -47,16 +45,8 @@ func NewFasterCar(m string) *FasterCar {
 			idxLeft := car.addCity(nameLeft)
 			idxRight := car.addCity(nameRight)
 
-			car.points = append(car.points, PointInt{
-				Left:  idxLeft,
-				Edge:  int32(n),
-				Right: idxRight,
-			})
+			car.graph.AddArc(int(idxLeft), int(idxRight), int64(n))
 		}
-	}
-
-	for _, point := range car.points {
-		car.graph.AddArc(int(point.Left), int(point.Right), int64(point.Edge))
 	}
 
 	return car
@@ -86,7 +76,6 @@ func (c *FasterCar) Go(start, finish string) []string {
 
 	best, err := c.graph.Shortest(int(startIdx), int(finishIdx))
 	if err != nil {
-		fmt.Println(err)
 		return nil
 	}
 

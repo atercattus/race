@@ -23,12 +23,6 @@ type Point struct {
 	Right string
 }
 
-type PointInt struct {
-	Left  int32
-	Edge  int32
-	Right int32
-}
-
 type Variants struct {
 	Value  int
 	Cities []string
@@ -99,17 +93,4 @@ func min(points []Point, start string) Point {
 	}
 
 	return min
-}
-
-func minInt(points []PointInt, startIdx int32) PointInt {
-	minIdx := 0
-	minEdge := int32(100)
-	for idx, p := range points {
-		if p.Left == startIdx && p.Edge < minEdge {
-			minIdx = idx
-			minEdge = p.Edge
-		}
-	}
-
-	return points[minIdx]
 }
