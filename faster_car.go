@@ -2,52 +2,47 @@ package race
 
 import (
 	"io/ioutil"
-	"regexp"
 	"strconv"
 	"strings"
 )
 
 type FasterCar struct {
 	file string
-	re   *regexp.Regexp
 }
 
 func NewFasterCar(m string) *FasterCar {
 	return &FasterCar{
 		file: m,
-		re:   regexp.MustCompile(`(?P<Left>[A-Z]) - (?P<Edge>[0-9]) - (?P<Right>[A-Z])`),
 	}
 }
+
+const (
+	delim    = ` - `
+	delimLen = len(delim)
+)
 
 func (c *FasterCar) Go(start, finish string) []string {
 	data, _ := ioutil.ReadFile(c.file)
 	lines := strings.Split(string(data), "\n")
 
-	l := len(lines) - 1
+	var points []Point
 
-	all := []map[string]string{}
-	for i := 0; i < l; i++ {
-		line := lines[i]
-
-		match := c.re.FindStringSubmatch(line)
-		params := map[string]string{}
-		for i, name := range c.re.SubexpNames() {
-			if i > 0 && i <= len(match) {
-				params[name] = match[i]
-			}
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		} else if pos1 := strings.Index(line, delim); pos1 == -1 {
+			return nil
+		} else if pos2 := strings.LastIndex(line, delim); pos2 == pos1 {
+			return nil
+		} else if n, err := strconv.Atoi(line[pos1+delimLen : pos2]); err != nil {
+			return nil
+		} else {
+			points = append(points, Point{
+				Left:  line[:pos1],
+				Edge:  int(n),
+				Right: line[pos2+delimLen:],
+			})
 		}
-
-		all = append(all, params)
-	}
-
-	points := []Point{}
-	for _, p := range all {
-		edge, _ := strconv.Atoi(p["Edge"])
-		points = append(points, Point{
-			Left:  p["Left"],
-			Edge:  edge,
-			Right: p["Right"],
-		})
 	}
 
 	cities := []string{}
