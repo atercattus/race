@@ -9,17 +9,17 @@ import (
 
 type FasterCar struct {
 	file string
+	re   *regexp.Regexp
 }
 
 func NewFasterCar(m string) *FasterCar {
 	return &FasterCar{
 		file: m,
+		re:   regexp.MustCompile(`(?P<Left>[A-Z]) - (?P<Edge>[0-9]) - (?P<Right>[A-Z])`),
 	}
 }
 
 func (c *FasterCar) Go(start, finish string) []string {
-	re := regexp.MustCompile(`(?P<Left>[A-Z]) - (?P<Edge>[0-9]) - (?P<Right>[A-Z])`)
-
 	data, _ := ioutil.ReadFile(c.file)
 	lines := strings.Split(string(data), "\n")
 
@@ -29,9 +29,9 @@ func (c *FasterCar) Go(start, finish string) []string {
 	for i := 0; i < l; i++ {
 		line := lines[i]
 
-		match := re.FindStringSubmatch(line)
+		match := c.re.FindStringSubmatch(line)
 		params := map[string]string{}
-		for i, name := range re.SubexpNames() {
+		for i, name := range c.re.SubexpNames() {
 			if i > 0 && i <= len(match) {
 				params[name] = match[i]
 			}
