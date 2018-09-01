@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type FasterCar struct {
@@ -21,11 +22,20 @@ const (
 	delimLen = len(delim)
 )
 
+var (
+	pointsPool = sync.Pool{
+		New: func() interface{} {
+			return []Point{}
+		},
+	}
+)
+
 func (c *FasterCar) Go(start, finish string) []string {
 	data, _ := ioutil.ReadFile(c.file)
 	lines := strings.Split(string(data), "\n")
 
-	var points []Point
+	points := pointsPool.Get().([]Point)[:0]
+	defer func() { pointsPool.Put(points) }()
 
 	for _, line := range lines {
 		if len(line) == 0 {
